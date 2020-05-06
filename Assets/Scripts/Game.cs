@@ -45,19 +45,19 @@ namespace Game {
         {
             int radius = 2;
             Vector3 currentPosition = Camera.main.transform.position;
-            Vector2 currentChunkPosition = new Vector2((float) Math.Floor(currentPosition.x / Chunk.size), (float) Math.Floor(currentPosition.z / Chunk.size));
-            float chunkColumnDistance;
+            float chunkDistance;
 
             for (int x = 0; x < world.Size.x; x++)
             {
                 for (int y = 0; y < world.Size.y; y++)
                 {
-                    chunkColumnDistance = Mathf.Sqrt((float) Math.Pow(x - currentChunkPosition.x, 2) + (float)Math.Pow(y - currentChunkPosition.y, 2));
-
-                    if (chunkColumnDistance <= radius)
+                    for (int i = ChunkColumn.chunksPerColumn - 1; i > -1; --i)
                     {
-                        for (int i = ChunkColumn.chunksPerColumn - 1; i > -1; --i)
+                        chunkDistance = Vector3.Distance(currentPosition, world.chunkColumns[x, y].chunks[i].globalPosition);
+
+                        if (chunkDistance <= radius * Chunk.size)
                         {
+                        
                             if (world.chunkColumns[x, y].chunks[i].rendered)
                             {
                                 continue;
