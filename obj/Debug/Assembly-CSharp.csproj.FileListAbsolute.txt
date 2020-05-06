@@ -1,0 +1,2 @@
+C:\Users\joshp\Game\obj\Debug\Assembly-CSharp.csprojAssemblyReference.cache
+C:\Users\joshp\Game\obj\Debug\Assembly-CSharp.csproj.CoreCompileInputs.cache
