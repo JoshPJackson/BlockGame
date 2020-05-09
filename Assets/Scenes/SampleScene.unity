@@ -292,9 +292,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f893cc1152fc6a44a87378b91c9c1df5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  debugMode: 0
+  debugMode: 1
   debugGUI: {fileID: 0}
   debugGUIObject: {fileID: 0}
+  radius: {x: 3, y: 4, z: 3}
+  chunkPosition: {x: 0, y: 0, z: 0}
+  currentPosition: {x: 0, y: 0, z: 0}
+  useGravity: 0
 --- !u!4 &1693319884
 Transform:
   m_ObjectHideFlags: 0

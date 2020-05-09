@@ -230,5 +230,10 @@ namespace Game.Blocks
                 hasCubeSideMesh[side] = true;
             }
         }
+
+        public override string ToString()
+        {
+            return GetType().ToString();
+        }
     }
 }

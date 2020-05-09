@@ -59,7 +59,8 @@ namespace Game.GUI
             debuggers.Add(new MouseDebugger());
             debuggers.Add(new ScreenDebugger());
             debuggers.Add(new VelocityDebugger());
-            debuggers.Add(new BlockCountDebugger());
+            //debuggers.Add(new BlockCountDebugger());
+            debuggers.Add(new ChunkDebugger());
         }
 
         void OnGUI()

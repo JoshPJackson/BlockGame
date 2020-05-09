@@ -61,7 +61,6 @@ public class FirstPersonCamera : MonoBehaviour
                 character.transform.eulerAngles = lookAt;
             }
 
-            // bring them back down to earth
             if (!character.isGrounded)
             {
                 currentJumpSpeed -= 2f * Time.deltaTime;

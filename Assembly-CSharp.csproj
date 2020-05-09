@@ -109,6 +109,7 @@
      <Compile Include="Assets\Scripts\GUI\AbstractDebugger.cs" />
      <Compile Include="Assets\Scripts\GUI\Debuggers\BlockCountDebugger.cs" />
      <Compile Include="Assets\Scripts\GUI\Debuggers\CameraDebugger.cs" />
+     <Compile Include="Assets\Scripts\GUI\Debuggers\ChunkDebugger.cs" />
      <Compile Include="Assets\Scripts\GUI\Debuggers\IDebugger.cs" />
      <Compile Include="Assets\Scripts\GUI\Debuggers\MouseDebugger.cs" />
      <Compile Include="Assets\Scripts\GUI\Debuggers\ScreenDebugger.cs" />

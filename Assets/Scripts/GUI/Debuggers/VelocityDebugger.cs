@@ -10,6 +10,7 @@ namespace Game.GUI.Debuggers
         {
             string label = "Velocity: \n";
             label += GameObject.Find("Main Camera").GetComponent<CharacterController>().velocity.ToString();
+            content.text = label;
 
             style.CalcSize(content);
             UnityEngine.GUI.Label(new Rect(position.x, position.y + 20, 20, 20), label, style);

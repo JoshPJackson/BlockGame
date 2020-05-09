@@ -20,18 +20,25 @@ public class WorldBuilder
 
     public int heightLimit;
 
-    public WorldBuilder()
+    public Vector3 startPosition;
+
+    public int loaded = 0;
+
+    public WorldBuilder(Vector2 size)
     {
-        Size = new Vector2(5, 5);
+        Size = size;
         Offset = Vector3.zero;
         chunkColumns = new ChunkColumn[(int) Size.x, (int) Size.y];
         worldMagnitude = (int) Size.x * Chunk.size;
         heightLimit = ChunkColumn.chunksPerColumn * Chunk.size;
+        startPosition = new Vector3();
     }
 
     public void Generate()
     {
         float smoothness = 0.4f;
+        Block[,,] blocks = new Block[Chunk.size, Chunk.size, Chunk.size];
+        Vector3 chunkPosition = Vector3.zero;
 
         for (int i = 0; i < Size.x; i++)
         {
@@ -46,16 +53,13 @@ public class WorldBuilder
                 );
                 chunkColumn.parent = this;
 
+                Vector3 currentPosition = Camera.main.transform.position;
+
+                chunkPosition = chunkColumn.globalPosition;
+
                 for (int k = 0; k < ChunkColumn.chunksPerColumn; k++)
                 {
-                    Chunk chunk = new Chunk();
-                    chunk.parent = chunkColumn;
-                    chunk.localPosition = k;
-                    chunk.globalPosition = new Vector3(
-                        chunkColumn.globalPosition.x,
-                        Chunk.size * k,
-                        chunkColumn.globalPosition.z
-                    );
+                    chunkPosition.y = Chunk.size * k;
 
                     for (int l = 0; l < Chunk.size; l++)
                     {
@@ -63,28 +67,27 @@ public class WorldBuilder
                         {
                             for (int n = 0; n < Chunk.size; n++)
                             {
-
-                                Block block;
-
                                 Vector3 positionInChunk = new Vector3(l, m, n);
-                                Vector3 position = positionInChunk + chunk.globalPosition;
+                                Vector3 position = positionInChunk + chunkPosition;
                                 int maxHeight = 50 + (int)(50 * Mathf.PerlinNoise(position.x / worldMagnitude, position.z / worldMagnitude));
+
+                                if (position.x == startPosition.x && position.z == startPosition.z)
+                                {
+                                    startPosition.y = maxHeight;
+                                }
+
                                 float magnitude = PerlinNoise3d.Make(position / (worldMagnitude * smoothness));
 
-                                block = BlockDecider(magnitude, position.y, maxHeight);
-
-                                block.chunk = chunk;
-                                block.positionInChunk = positionInChunk;
-                                block.globalPosition = position;
-                                chunk.blocks[l, m, n] = block;
+                                Block block = BlockDecider(magnitude, position.y, maxHeight);
+                                blocks[l, m, n] = block;
                             }
                         }
                     }
 
-                    chunkColumn.chunks[k] = chunk;
+                    Chunk.StaticSave(chunkColumn.localPosition, k, blocks);
                 }
+
                 chunkColumns[i, j] = chunkColumn;
-               
             }
         }
     }
@@ -127,7 +130,12 @@ public class WorldBuilder
         u_cc = x_cc / Chunk.size;
         v_cc = z_cc / Chunk.size;
 
-        return (Block) chunkColumns[u_cc, v_cc].chunks[p_c].blocks[u_b, v_b, w_b];
+        if (chunkColumns[u_cc, v_cc].chunks[p_c] == null)
+        {
+            return new Air();
+        }
+
+        return chunkColumns[u_cc, v_cc].chunks[p_c].blocks[u_b, v_b, w_b];
     }
 
     public Block BlockDecider(float magnitude, float height, int maxHeight)

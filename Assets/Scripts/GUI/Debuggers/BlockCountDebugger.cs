@@ -24,7 +24,7 @@ namespace Game.GUI.Debuggers
             if (label.Length == 0)
             {
                 WorldBuilder world = GetWorldBuilder();
-                int total = (int) world.Size.x * (int) world.Size.y * ChunkColumn.chunksPerColumn * Chunk.size * Chunk.size * Chunk.size;
+                int total = 0;
 
                 // count blocks
                 for (int i = 0; i < world.Size.x; i++)
@@ -33,22 +33,26 @@ namespace Game.GUI.Debuggers
                     {
                         for (int k = 0; k < ChunkColumn.chunksPerColumn; k++)
                         {
-                            for (int l = 0; l < Chunk.size; l++)
+                            if (world.chunkColumns[i, j].chunks[k] != null)
                             {
-                                for (int m = 0; m < Chunk.size; m++)
+                                for (int l = 0; l < Chunk.size; l++)
                                 {
-                                    for (int n = 0; n < Chunk.size; n++)
+                                    for (int m = 0; m < Chunk.size; m++)
                                     {
-                                        Block block = world.chunkColumns[i, j].chunks[k].blocks[l, m, n];
-                                        string type = block.GetType().ToString();
-
-                                        if (!blockCounts.ContainsKey(type))
+                                        for (int n = 0; n < Chunk.size; n++)
                                         {
-                                            blockCounts[type] = 0;
-                                        }
+                                            Block block = world.chunkColumns[i, j].chunks[k].blocks[l, m, n];
+                                            string type = block.GetType().ToString();
 
-                                        blockCounts[type]++;
-                                        
+                                            if (!blockCounts.ContainsKey(type))
+                                            {
+                                                blockCounts[type] = 0;
+                                            }
+
+                                            total++;
+                                            blockCounts[type]++;
+
+                                        }
                                     }
                                 }
                             }

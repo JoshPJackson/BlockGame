@@ -3,6 +3,10 @@ using System.Collections.Generic;
 using UnityEngine;
 using Game.Blocks;
 using Game.Textures;
+using System.IO;
+using System.Text;
+using System;
+using System.Runtime.Serialization.Formatters.Binary;
 
 namespace Game.Chunks
 {
@@ -21,6 +25,8 @@ namespace Game.Chunks
         public static int size = 16;
 
         public bool rendered = false;
+
+        public Vector2 chunkColumnPosition;
 
         public Chunk()
         {
@@ -91,6 +97,110 @@ namespace Game.Chunks
                 collider.sharedMesh = GameObject.transform.GetComponent<MeshFilter>().mesh;
                 rendered = true;
             }
+        }
+
+        public void Save()
+        {
+            string fileName = GetFileName(chunkColumnPosition, localPosition);
+
+                FileStream fileStream = new FileStream(fileName, FileMode.Create);
+                fileStream.Close();
+
+                StreamWriter streamWriter = new StreamWriter(fileName, true, Encoding.ASCII);
+
+                for (int i = 0; i < Chunk.size; i++)
+                {
+                    for (int j = 0; j < Chunk.size; j++)
+                    {
+                        for (int k = 0; k < Chunk.size; k++)
+                        {
+                            streamWriter.WriteLine(blocks[i, j, k].ToString());
+                        }
+                    }
+                }
+
+                streamWriter.Close();
+            
+        }
+
+        public static void StaticSave(Vector2 chunkColumnPosition, int localPosition, Block[,,] blocks)
+        {
+            string fileName = GetFileName(chunkColumnPosition, localPosition);
+            FileStream fileStream = new FileStream(fileName, FileMode.Create, FileAccess.ReadWrite);
+            fileStream.Close();
+
+            StreamWriter streamWriter = new StreamWriter(fileName, false, Encoding.ASCII);
+
+            for (int i = 0; i < Chunk.size; i++)
+            {
+                for (int j = 0; j < Chunk.size; j++)
+                {
+                    for (int k = 0; k < Chunk.size; k++)
+                    {
+                        streamWriter.WriteLine(blocks[i, j, k].ToString());
+                    }
+                }
+            }
+
+            streamWriter.Close();
+        }
+
+        public static Chunk Load(Vector2 chunkColumnLocalPosition, int localChunkPosition)
+        {
+            Chunk chunk = new Chunk();
+            chunk.chunkColumnPosition = chunkColumnLocalPosition;
+            chunk.localPosition = localChunkPosition;
+            chunk.parent = Game.currentGame.world.chunkColumns[(int) chunkColumnLocalPosition.x, (int) chunkColumnLocalPosition.y];
+            
+            chunk.globalPosition = Chunk.size * new Vector3(
+                chunkColumnLocalPosition.x,
+                localChunkPosition,
+                chunkColumnLocalPosition.y
+            );
+
+            string fileName = GetFileName(chunkColumnLocalPosition, localChunkPosition);
+
+            StreamReader streamReader = new StreamReader(fileName);
+
+            for (int x = 0; x < Chunk.size; x++)
+            {
+                for (int y = 0; y < Chunk.size; y++)
+                {
+                    for (int z = 0; z < Chunk.size; z++)
+                    {
+                        string className = streamReader.ReadLine();
+
+                        Block newBlock = (Block) Activator.CreateInstance(Type.GetType(className));
+
+                        newBlock.chunk = chunk;
+                        newBlock.positionInChunk = new Vector3(x, y, z);
+                        newBlock.globalPosition = new Vector3(
+                            chunk.globalPosition.x + x,
+                            chunk.globalPosition.y + y,
+                            chunk.globalPosition.z + z
+                        );
+
+                        chunk.blocks[x, y, z] = newBlock;
+                    }
+                }
+            }
+
+            streamReader.Close();
+
+            return chunk;
+        }
+
+        public static string GetFileName(Vector2 chunkColumnPosition, int localPosition)
+        {
+            return "C:/Users/joshp/Documents/chunks/chunk_column_" + 
+                chunkColumnPosition.x + "_" + 
+                chunkColumnPosition.y +  "_chunk_" + 
+                localPosition + ".dat";
+        }
+
+        public void Destroy()
+        {
+            GameObject.Destroy(GameObject);
         }
     }
 }

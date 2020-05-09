@@ -22,49 +22,80 @@ namespace Game {
 
         public static Game currentGame;
 
+        public Vector3 radius = new Vector3(3, 2, 3);
+
+        public Vector3 chunkPosition = new Vector3();
+
+        public Vector3 currentPosition;
+
+        public bool useGravity = false;
+
         // Start is called before the first frame update
         void Start()
         {
-            world = new WorldBuilder();
-            world.Generate();
+            world = new WorldBuilder(new Vector2(5, 5));
 
             mapper = new TextureAtlasMapper();
             currentGame = this;
             setUpDebug();
             setUpCamera();
-            Camera.main.transform.position = new Vector3(10, 100, 10);
+            world.startPosition = new Vector3(10, 0, 10);
+            world.Generate();
+            world.startPosition.y += 20;
+            Camera.main.transform.position = world.startPosition;
+            Camera.main.gameObject.AddComponent<FirstPersonCamera>();
         }
 
         // Update is called once per frame
         void Update()
         {
-            StartCoroutine("Render");
+            Render();
         }
 
-        IEnumerator Render()
+        void Render()
         {
-            int radius = 2;
-            Vector3 currentPosition = Camera.main.transform.position;
-            float chunkDistance;
+            currentPosition = Camera.main.transform.position;
 
             for (int x = 0; x < world.Size.x; x++)
             {
+                chunkPosition.x = x;
+
                 for (int y = 0; y < world.Size.y; y++)
                 {
-                    for (int i = ChunkColumn.chunksPerColumn - 1; i > -1; --i)
+                    chunkPosition.z = y;
+
+                    for (int i = 0; i < ChunkColumn.chunksPerColumn; i++)
                     {
-                        chunkDistance = Vector3.Distance(currentPosition, world.chunkColumns[x, y].chunks[i].globalPosition);
+                        chunkPosition.y = i;
 
-                        if (chunkDistance <= radius * Chunk.size)
+                        if (
+                            Math.Abs(currentPosition.x / Chunk.size - chunkPosition.x) < radius.x &&
+                            Math.Abs(currentPosition.z / Chunk.size - chunkPosition.z) < radius.z &&
+                            Math.Abs(currentPosition.y / Chunk.size - i) < radius.y
+                        )
                         {
-                        
-                            if (world.chunkColumns[x, y].chunks[i].rendered)
+                            if (world.chunkColumns[x, y].chunks[i] == null)
                             {
-                                continue;
-                            }
+                                Chunk chunk = Chunk.Load(new Vector2(x, y), i);
 
-                            world.chunkColumns[x, y].chunks[i].Render();
-                            yield return null;
+                                world.loaded++;
+
+                                world.chunkColumns[x, y].chunks[i] = chunk;
+                                chunk.Render();
+                                chunk.Optimize();
+                                return;
+                            }
+                        }
+                        else
+                        {
+                            if (world.chunkColumns[x, y].chunks[i] != null)
+                            {
+                                world.chunkColumns[x, y].chunks[i].Save();
+                                world.chunkColumns[x, y].chunks[i].Destroy();
+                                world.chunkColumns[x, y].chunks[i] = null;
+                                world.loaded--;
+                                return;
+                            }
                         }
                     }
                 }
@@ -81,7 +112,6 @@ namespace Game {
         void setUpCamera()
         {
             GameObject camera = GameObject.Find("Main Camera");
-            camera.AddComponent<FirstPersonCamera>();
             camera.AddComponent<CharacterController>();
 
         }
